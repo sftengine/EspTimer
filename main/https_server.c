@@ -88,7 +88,7 @@ static const char *html_page =
 "document.getElementById('off-hour').value=d.off_hour;"
 "document.getElementById('off-min').value=d.off_min;"
 "})"
-".catch(e=>console.error('Error:',e));"
+".catch(e=>{console.error('Status update error:',e);});"
 "}"
 "document.getElementById('timer-form').addEventListener('submit',function(e){"
 "e.preventDefault();"
@@ -108,7 +108,7 @@ static const char *html_page =
 "alert(d.message);"
 "updateStatus();"
 "})"
-".catch(e=>alert('Error saving timer'));"
+".catch(e=>{console.error('Save error:',e);alert('Error saving timer. Please try again.');});"
 "});"
 "updateStatus();"
 "setInterval(updateStatus,5000);"
@@ -189,10 +189,23 @@ static esp_err_t timer_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    uint8_t on_hour = (uint8_t)on_hour_json->valueint;
-    uint8_t on_min = (uint8_t)on_min_json->valueint;
-    uint8_t off_hour = (uint8_t)off_hour_json->valueint;
-    uint8_t off_min = (uint8_t)off_min_json->valueint;
+    // Validate time ranges before casting
+    int on_hour_int = on_hour_json->valueint;
+    int on_min_int = on_min_json->valueint;
+    int off_hour_int = off_hour_json->valueint;
+    int off_min_int = off_min_json->valueint;
+
+    if (on_hour_int < 0 || on_hour_int > 23 || on_min_int < 0 || on_min_int > 59 ||
+        off_hour_int < 0 || off_hour_int > 23 || off_min_int < 0 || off_min_int > 59) {
+        cJSON_Delete(root);
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Time values out of range (hour: 0-23, minute: 0-59)");
+        return ESP_FAIL;
+    }
+
+    uint8_t on_hour = (uint8_t)on_hour_int;
+    uint8_t on_min = (uint8_t)on_min_int;
+    uint8_t off_hour = (uint8_t)off_hour_int;
+    uint8_t off_min = (uint8_t)off_min_int;
 
     cJSON_Delete(root);
 

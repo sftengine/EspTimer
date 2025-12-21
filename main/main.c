@@ -143,7 +143,13 @@ void app_main(void)
     ESP_LOGI(TAG, "=====================================");
 
     // Create timer check task
-    xTaskCreate(timer_check_task, "timer_check", 2048, NULL, 5, NULL);
+    TaskHandle_t timer_task_handle = NULL;
+    BaseType_t task_created = xTaskCreate(timer_check_task, "timer_check", 2048, NULL, 5, &timer_task_handle);
+    if (task_created != pdPASS) {
+        ESP_LOGE(TAG, "Failed to create timer check task");
+    } else {
+        ESP_LOGI(TAG, "Timer check task created successfully");
+    }
 
     ESP_LOGI(TAG, "Free heap after initialization: %d bytes", esp_get_free_heap_size());
 

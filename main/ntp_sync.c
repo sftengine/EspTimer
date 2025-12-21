@@ -45,6 +45,9 @@ esp_err_t ntp_sync_time(void)
     }
 
     // Set timezone
+    // POSIX TZ format: positive CONFIG_TIMEZONE_OFFSET means hours AHEAD of UTC
+    // But POSIX format uses negative offset for ahead (e.g., "UTC-1" for CET which is UTC+1)
+    // So we negate the user-friendly CONFIG_TIMEZONE_OFFSET value
     char tz_str[32];
     snprintf(tz_str, sizeof(tz_str), "UTC%+d", -CONFIG_TIMEZONE_OFFSET);
     setenv("TZ", tz_str, 1);

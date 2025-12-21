@@ -108,6 +108,7 @@ error:
         *on_min = 0;
         *off_hour = 18;
         *off_min = 0;
+        return ESP_OK;  // Return success when using defaults
     }
     
     return ret;
