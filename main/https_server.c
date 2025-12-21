@@ -128,12 +128,22 @@ static esp_err_t root_handler(httpd_req_t *req)
 static esp_err_t status_handler(httpd_req_t *req)
 {
     char time_str[64];
-    uint8_t on_hour, on_min, off_hour, off_min;
+    uint8_t on_hour = 8, on_min = 0, off_hour = 18, off_min = 0;  // Initialize with defaults
     
     get_current_time_str(time_str, sizeof(time_str));
-    timer_load_settings(&on_hour, &on_min, &off_hour, &off_min);
+    
+    // Load timer settings (will use defaults if not found)
+    esp_err_t ret = timer_load_settings(&on_hour, &on_min, &off_hour, &off_min);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to load timer settings in status handler, using defaults");
+    }
     
     cJSON *root = cJSON_CreateObject();
+    if (root == NULL) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to create JSON");
+        return ESP_FAIL;
+    }
+    
     cJSON_AddStringToObject(root, "time", time_str);
     cJSON_AddBoolToObject(root, "relay_on", relay_get_state());
     cJSON_AddNumberToObject(root, "on_hour", on_hour);
@@ -142,6 +152,12 @@ static esp_err_t status_handler(httpd_req_t *req)
     cJSON_AddNumberToObject(root, "off_min", off_min);
     
     const char *json_str = cJSON_Print(root);
+    if (json_str == NULL) {
+        cJSON_Delete(root);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to serialize JSON");
+        return ESP_FAIL;
+    }
+    
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, json_str, strlen(json_str));
     
@@ -212,6 +228,11 @@ static esp_err_t timer_handler(httpd_req_t *req)
     esp_err_t err = timer_save_settings(on_hour, on_min, off_hour, off_min);
     
     cJSON *response = cJSON_CreateObject();
+    if (response == NULL) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to create response");
+        return ESP_FAIL;
+    }
+    
     if (err == ESP_OK) {
         cJSON_AddStringToObject(response, "message", "Timer settings saved successfully");
         cJSON_AddBoolToObject(response, "success", true);
@@ -221,6 +242,12 @@ static esp_err_t timer_handler(httpd_req_t *req)
     }
 
     const char *json_str = cJSON_Print(response);
+    if (json_str == NULL) {
+        cJSON_Delete(response);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to serialize response");
+        return ESP_FAIL;
+    }
+    
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, json_str, strlen(json_str));
     

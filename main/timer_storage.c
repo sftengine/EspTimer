@@ -80,36 +80,46 @@ esp_err_t timer_load_settings(uint8_t *on_hour, uint8_t *on_min,
     ret = nvs_open(NVS_NAMESPACE, NVS_READONLY, &my_handle);
     if (ret != ESP_OK) {
         ESP_LOGW(TAG, "Error opening NVS handle: %s", esp_err_to_name(ret));
+        // If NVS not found, return defaults
+        if (ret == ESP_ERR_NVS_NOT_FOUND) {
+            goto use_defaults;
+        }
         return ret;
     }
 
     ret = nvs_get_u8(my_handle, "on_hour", on_hour);
-    if (ret != ESP_OK) goto error;
+    if (ret != ESP_OK) goto cleanup;
     
     ret = nvs_get_u8(my_handle, "on_min", on_min);
-    if (ret != ESP_OK) goto error;
+    if (ret != ESP_OK) goto cleanup;
     
     ret = nvs_get_u8(my_handle, "off_hour", off_hour);
-    if (ret != ESP_OK) goto error;
+    if (ret != ESP_OK) goto cleanup;
     
     ret = nvs_get_u8(my_handle, "off_min", off_min);
-    if (ret != ESP_OK) goto error;
+    if (ret != ESP_OK) goto cleanup;
 
     ESP_LOGI(TAG, "Timer settings loaded: ON=%02d:%02d OFF=%02d:%02d",
              *on_hour, *on_min, *off_hour, *off_min);
+    
+    nvs_close(my_handle);
+    return ESP_OK;
 
-error:
+cleanup:
     nvs_close(my_handle);
     
     if (ret == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGI(TAG, "No timer settings found in NVS, using defaults");
-        // Set default values
-        *on_hour = 8;
-        *on_min = 0;
-        *off_hour = 18;
-        *off_min = 0;
-        return ESP_OK;  // Return success when using defaults
+        goto use_defaults;
     }
     
     return ret;
+
+use_defaults:
+    ESP_LOGI(TAG, "No timer settings found in NVS, using defaults");
+    // Set default values
+    *on_hour = 8;
+    *on_min = 0;
+    *off_hour = 18;
+    *off_min = 0;
+    return ESP_OK;  // Return success when using defaults
 }
