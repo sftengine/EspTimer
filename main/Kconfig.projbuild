@@ -1,0 +1,76 @@
+menu "WiFi Configuration"
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the ESP8266 to connect to.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the ESP8266 to use.
+
+    config WIFI_MAXIMUM_RETRY
+        int "Maximum retry"
+        default 5
+        help
+            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
+
+endmenu
+
+menu "NTP Configuration"
+
+    config NTP_SERVER_1
+        string "NTP Server 1"
+        default "pool.ntp.org"
+        help
+            Primary NTP server for time synchronization.
+
+    config NTP_SERVER_2
+        string "NTP Server 2"
+        default "time.google.com"
+        help
+            Secondary NTP server for time synchronization.
+
+    config NTP_SERVER_3
+        string "NTP Server 3"
+        default "time.cloudflare.com"
+        help
+            Tertiary NTP server for time synchronization.
+
+    config TIMEZONE_OFFSET
+        int "Timezone offset in hours"
+        default 0
+        range -12 14
+        help
+            Timezone offset from UTC in hours. Examples: 0 for UTC, 1 for CET, -5 for EST, 8 for CST.
+
+endmenu
+
+menu "Timer Configuration"
+
+    config RELAY_GPIO_PIN
+        int "Relay GPIO Pin"
+        default 5
+        range 0 16
+        help
+            GPIO pin number connected to the relay. Default is GPIO 5 (D1 on NodeMCU).
+            Note: GPIO 6-11 are used for flash on most ESP8266 modules.
+
+    config HTTPS_SERVER_PORT
+        int "HTTPS Server Port"
+        default 443
+        range 1 65535
+        help
+            Port number for the HTTPS server. Default is 443.
+
+    config RELAY_ACTIVE_HIGH
+        bool "Relay Active High"
+        default y
+        help
+            If enabled, relay turns ON with HIGH signal (1).
+            If disabled, relay turns ON with LOW signal (0).
+
+endmenu
