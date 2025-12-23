@@ -5,7 +5,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_log.h"
-#include "apps/sntp/sntp.h"
+#include "lwip/apps/sntp.h"
 
 #include "ntp_sync.h"
 

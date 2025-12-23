@@ -5,7 +5,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_log.h"
-
+#include "nvs.h"
 #include "wifi_manager.h"
 #include "ntp_sync.h"
 #include "relay_control.h"
@@ -134,7 +134,7 @@ void app_main(void)
 
     // Start HTTPS server
     ESP_LOGI(TAG, "Starting HTTPS server...");
-    ESP_ERROR_CHECK(start_https_server());
+    //ESP_ERROR_CHECK(start_https_server());
 
     ESP_LOGI(TAG, "=====================================");
     ESP_LOGI(TAG, "System Ready!");

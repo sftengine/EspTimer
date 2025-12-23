@@ -3,7 +3,6 @@ idf_component_register(
         "main.c"
         "wifi_manager.c"
         "ntp_sync.c"
-        "https_server.c"
         "relay_control.c"
         "timer_storage.c"
     INCLUDE_DIRS "."
