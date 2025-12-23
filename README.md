@@ -1,6 +1,6 @@
 # ESP8266 Web Timer
 
-A web-based timer application for ESP8266 using ESP-IDF that controls a relay based on scheduled on/off times. Features a secure HTTPS web interface for configuration and real-time clock synchronization via NTP.
+A web-based timer application for ESP8266 using ESP8266_RTOS_SDK that controls a relay based on scheduled on/off times. Features a secure HTTPS web interface for configuration and real-time clock synchronization via NTP.
 
 ## Features
 
@@ -30,7 +30,7 @@ Default GPIO assignments (configurable in code):
 
 ## Software Requirements
 
-- ESP-IDF v4.4 or later (ESP8266 RTOS SDK)
+- ESP8266_RTOS_SDK v3.4 or later
 - Python 3.6 or later
 - Git
 
