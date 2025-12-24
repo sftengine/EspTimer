@@ -2,6 +2,7 @@
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "cJSON.h"
+#include "timer_storage.h"
 
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -140,16 +141,42 @@ static esp_err_t timer_post_handler(httpd_req_t *req)
     if (cJSON_IsString(start) && cJSON_IsString(stop)) {
         ESP_LOGI(TAG, "Start time: %s, Stop time:  %s", start->valuestring, stop->valuestring);
         
-        // TODO: Save to NVS and apply timer settings
-        // Call your timer_storage functions here
-        
-        const char* success_resp = "{\"status\":  \"success\", \"message\": \"Timer set\"}";
-        httpd_resp_set_type(req, "application/json");
-        httpd_resp_send(req, success_resp, strlen(success_resp));
-    } else {
-        const char* error_resp = "{\"error\": \"Missing start or stop time\"}";
-        httpd_resp_set_type(req, "application/json");
-        httpd_resp_send(req, error_resp, strlen(error_resp));
+        // Parse time strings (format: "HH:MM")
+        int start_hour, start_min, stop_hour, stop_min;
+        if (sscanf(start->valuestring, "%d:%d", &start_hour, &start_min) == 2 &&
+            sscanf(stop->valuestring, "%d:%d", &stop_hour, &stop_min) == 2) {
+            
+            // Validate ranges
+            if (start_hour >= 0 && start_hour <= 23 && start_min >= 0 && start_min <= 59 &&
+                stop_hour >= 0 && stop_hour <= 23 && stop_min >= 0 && stop_min <= 59) {
+                
+                // Save to NVS using timer_save_settings
+                esp_err_t ret = timer_save_settings((uint8_t)start_hour, (uint8_t)start_min,
+                                                    (uint8_t)stop_hour, (uint8_t)stop_min);
+                
+                if (ret == ESP_OK) {
+                    ESP_LOGI(TAG, "Timer saved successfully:  ON=%02d:%02d OFF=%02d:%02d", 
+                            start_hour, start_min, stop_hour, stop_min);
+                    
+                    const char* success_resp = "{\"status\": \"success\", \"message\": \"Timer set and saved to NVS\"}";
+                    httpd_resp_set_type(req, "application/json");
+                    httpd_resp_send(req, success_resp, strlen(success_resp));
+                } else {
+                    ESP_LOGE(TAG, "Failed to save timer settings to NVS");
+                    const char* error_resp = "{\"error\": \"Failed to save to NVS\"}";
+                    httpd_resp_set_type(req, "application/json");
+                    httpd_resp_send(req, error_resp, strlen(error_resp));
+                }
+            } else {
+                const char* error_resp = "{\"error\": \"Time values out of range\"}";
+                httpd_resp_set_type(req, "application/json");
+                httpd_resp_send(req, error_resp, strlen(error_resp));
+            }
+        } else {
+            const char* error_resp = "{\"error\": \"Invalid time format.  Use HH:MM\"}";
+            httpd_resp_set_type(req, "application/json");
+            httpd_resp_send(req, error_resp, strlen(error_resp));
+        }
     }
 
     cJSON_Delete(json);
