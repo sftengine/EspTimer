@@ -340,3 +340,28 @@ For issues and questions:
 - GitHub Issues: https://github.com/sftengine/EspTimer/issues
 - ESP8266 Community Forum
 - Stack Overflow (tag: esp8266)
+
+### My Notes: compiled on mingw64
+cd /c/Espressif/frameworks/ESP8266_RTOS_SDK
+
+# Create corrected export script with the RIGHT path
+cat > export-fixed.sh << 'EOF'
+export IDF_PATH="/c/Espressif/frameworks/ESP8266_RTOS_SDK"
+source /c/Espressif/python_env/rtos3.4_py3.9_env/Scripts/activate
+export PATH="/c/Espressif/tools/xtensa-lx106-elf/esp-2020r3-49-gd5524c1-8.4.0/xtensa-lx106-elf/bin:$PATH"
+export PATH="/c/Espressif/tools/cmake/3.13.4/bin:$PATH"
+export PATH="/c/Espressif/tools/ninja/1.9.0:$PATH"
+export PATH="$IDF_PATH/tools: $PATH"
+echo "ESP8266 RTOS SDK environment ready!"
+echo "IDF_PATH: $IDF_PATH"
+which xtensa-lx106-elf-gcc
+EOF
+
+# Source it
+source ./export-fixed.sh
+
+# Build! 
+cd /c/Users/Andrea/Documents/Eletica/EspTimer
+idf. py fullclean
+idf.py all
+idf.py -p COM5 flash
