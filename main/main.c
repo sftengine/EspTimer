@@ -134,7 +134,7 @@ void app_main(void)
 
     // Start HTTPS server
     ESP_LOGI(TAG, "Starting HTTPS server...");
-    //ESP_ERROR_CHECK(start_https_server());
+    ESP_ERROR_CHECK(start_http_server());
 
     ESP_LOGI(TAG, "=====================================");
     ESP_LOGI(TAG, "System Ready!");
